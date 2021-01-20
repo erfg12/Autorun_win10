@@ -33,19 +33,26 @@ namespace USBAutoRun
             Debug.WriteLine("bg worker started");
             while (true)
             {
-                var drives = DriveInfo.GetDrives().Where(drive => drive.IsReady && drive.DriveType == DriveType.Removable);
+                System.Threading.Thread.Sleep(500); // maybe make this a customizable setting
+
+                var RemovableDrives = DriveInfo.GetDrives().Where(drive => drive.IsReady && drive.DriveType == DriveType.Removable);
                 var NotReadyDrives = DriveInfo.GetDrives().Where(drive => !drive.IsReady && drive.DriveType == DriveType.Removable);
-                foreach (var d in drives)
+                var NonRemovableDrives = DriveInfo.GetDrives().Where(drive => drive.IsReady && drive.DriveType != DriveType.Removable);
+                var NotReadyNonRemovableDrives = DriveInfo.GetDrives().Where(drive => !drive.IsReady && drive.DriveType != DriveType.Removable);
+
+                foreach (var d in RemovableDrives)
                 {
-                    // if we already read the drive, skip it. Put these in a listview in the UI.
                     if (AlreadyReadDrives.ContainsKey(d.Name)) continue;
+                    Debug.WriteLine("Adding drive " + d.Name);
 
-                    Debug.WriteLine("Adding drive:" + d.Name);
-                    
-                    System.Threading.Thread.Sleep(3000); // make this a setting
+                    string[] RowData = { d.VolumeLabel, d.DriveType.ToString(), d.IsReady.ToString(), d.DriveFormat };
 
-                    // prevent exe launch on first run
-                    //if (FirstRun) { Debug.WriteLine("FirstRun"); continue; }
+                    if (RemovableDrivesList.InvokeRequired)
+                    {
+                        RemovableDrivesList.Invoke(
+                            new Action(() => RemovableDrivesList.Items.Add(d.Name).SubItems.AddRange(RowData))
+                        );
+                    };
 
                     // read and execute Autorun.info files
                     foreach (var file in d.RootDirectory.GetFiles("Autorun.inf"))
@@ -61,8 +68,7 @@ namespace USBAutoRun
                                 try {
                                     Process.Start(exe);
                                 } catch {
-                                    // drive wasnt ready
-                                    return;
+                                    return; // drive wasnt ready, prevent crash
                                 }
                             }
                             else if (line.ToLower().Contains("shellexecute=") && !line.ToLower().Contains(";shellexecute="))
@@ -72,13 +78,26 @@ namespace USBAutoRun
                                 try {
                                     Process.Start(exe);
                                 } catch {
-                                    // drive wasnt ready
-                                    return;
+                                    return; // drive wasnt ready, prevent crash
                                 }
                             }
                         }
-                        AlreadyReadDrives.Add(d.Name, d.VolumeLabel);
                     }
+                    AlreadyReadDrives.Add(d.Name, d.VolumeLabel);
+                }
+
+                foreach (var d in NonRemovableDrives)
+                {
+                    System.Threading.Thread.Sleep(3000); // make this a setting
+
+                    string[] RowData = { d.VolumeLabel, d.DriveType.ToString(), d.IsReady.ToString(), d.DriveFormat };
+
+                    if (NonRemovableDrivesList.InvokeRequired)
+                    {
+                        NonRemovableDrivesList.Invoke(
+                            new Action(() => { if (NonRemovableDrivesList.FindItemWithText(d.Name) == null) NonRemovableDrivesList.Items.Add(d.Name).SubItems.AddRange(RowData); })
+                        );
+                    };
                 }
 
                 // remove all non-ready devices (like an SD card that got removed)
@@ -88,10 +107,17 @@ namespace USBAutoRun
                     {
                         AlreadyReadDrives.Remove(d.Name);
                         Debug.WriteLine("Removing drive:" + d.Name);
+                        if (RemovableDrivesList.InvokeRequired)
+                        {
+                            RemovableDrivesList.Invoke(
+                                new Action(() => {
+                                    RemovableDrivesList.FindItemWithText(d.Name).Remove(); 
+                                })
+                            );
+                        }
                     }
                 }
                 //FirstRun = false;
-                System.Threading.Thread.Sleep(1000);
             }
         }
 
