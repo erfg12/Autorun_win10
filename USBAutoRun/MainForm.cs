@@ -20,7 +20,7 @@ namespace USBAutoRun
         }
 
         Dictionary<string, string> AlreadyReadDrives = new Dictionary<string, string>();
-        bool FirstRun = true;
+        //bool FirstRun = true;
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -37,14 +37,15 @@ namespace USBAutoRun
                 var NotReadyDrives = DriveInfo.GetDrives().Where(drive => !drive.IsReady && drive.DriveType == DriveType.Removable);
                 foreach (var d in drives)
                 {
-                    // if we already read the drive, skip it.
+                    // if we already read the drive, skip it. Put these in a listview in the UI.
                     if (AlreadyReadDrives.ContainsKey(d.Name)) continue;
 
                     Debug.WriteLine("Adding drive:" + d.Name);
-                    AlreadyReadDrives.Add(d.Name, d.VolumeLabel);
+                    
+                    System.Threading.Thread.Sleep(3000); // make this a setting
 
                     // prevent exe launch on first run
-                    if (FirstRun) { Debug.WriteLine("FirstRun"); continue; }
+                    //if (FirstRun) { Debug.WriteLine("FirstRun"); continue; }
 
                     // read and execute Autorun.info files
                     foreach (var file in d.RootDirectory.GetFiles("Autorun.inf"))
@@ -57,17 +58,26 @@ namespace USBAutoRun
                             {
                                 string exe = d.RootDirectory + @"\" + line.Split('=')[1];
                                 Debug.WriteLine("Starting EXE from open:" + exe);
-                                if (d.IsReady)
+                                try {
                                     Process.Start(exe);
+                                } catch {
+                                    // drive wasnt ready
+                                    return;
+                                }
                             }
                             else if (line.ToLower().Contains("shellexecute=") && !line.ToLower().Contains(";shellexecute="))
                             {
                                 string exe = d.RootDirectory + @"\" + line.Split('=')[1];
                                 Debug.WriteLine("Starting EXE from shellexecute:" + exe);
-                                if (d.IsReady)
+                                try {
                                     Process.Start(exe);
+                                } catch {
+                                    // drive wasnt ready
+                                    return;
+                                }
                             }
                         }
+                        AlreadyReadDrives.Add(d.Name, d.VolumeLabel);
                     }
                 }
 
@@ -80,7 +90,7 @@ namespace USBAutoRun
                         Debug.WriteLine("Removing drive:" + d.Name);
                     }
                 }
-                FirstRun = false;
+                //FirstRun = false;
                 System.Threading.Thread.Sleep(1000);
             }
         }
