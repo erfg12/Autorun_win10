@@ -57,13 +57,15 @@ namespace USBAutoRun
                             {
                                 string exe = d.RootDirectory + @"\" + line.Split('=')[1];
                                 Debug.WriteLine("Starting EXE from open:" + exe);
-                                Process.Start(exe);
+                                if (d.IsReady)
+                                    Process.Start(exe);
                             }
                             else if (line.ToLower().Contains("shellexecute=") && !line.ToLower().Contains(";shellexecute="))
                             {
                                 string exe = d.RootDirectory + @"\" + line.Split('=')[1];
                                 Debug.WriteLine("Starting EXE from shellexecute:" + exe);
-                                Process.Start(exe);
+                                if (d.IsReady)
+                                    Process.Start(exe);
                             }
                         }
                     }
