@@ -32,12 +32,14 @@ namespace USBAutoRun
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             Debug.WriteLine("bg worker started");
+
             while (true)
             {
                 System.Threading.Thread.Sleep(500); // maybe make this a customizable setting
 
                 var RemovableDrives = DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Removable);
                 var NonRemovableDrives = DriveInfo.GetDrives().Where(drive => drive.DriveType != DriveType.Removable);
+                List<string> DrivesByName = new List<string>();
 
                 foreach (var d in RemovableDrives)
                 {
@@ -56,6 +58,7 @@ namespace USBAutoRun
                                 string[] RowData = { d.VolumeLabel, d.DriveType.ToString(), d.DriveFormat, FindINF.ToString() };
                                 RemovableDrivesList.Items.Add(d.Name).SubItems.AddRange(RowData);
                             }
+                            DrivesByName.Add(d.Name); // used to detect if drive was removed
                         }
                     ));
 
@@ -65,6 +68,26 @@ namespace USBAutoRun
                         AlreadyReadDrives.Add(d.Name, d.VolumeLabel);
                     }
                 }
+
+                // remove drives from list that have been removed physically
+                RemovableDrivesList.Invoke(
+                        new Action(() =>
+                        {
+                            List<ListViewItem> Tmplvi = new List<ListViewItem>();
+                            foreach (ListViewItem lvi in RemovableDrivesList.Items)
+                            {
+                                Tmplvi.Add(lvi);
+                            }
+                            foreach (ListViewItem lvi in Tmplvi)
+                            {
+                                if (!DrivesByName.Contains(lvi.Text)) // if our listview item is no longer connected, remove it
+                                {
+                                    AlreadyReadDrives.Remove(lvi.Text);
+                                    RemovableDrivesList.FindItemWithText(lvi.Text).Remove();
+                                }
+                            }
+                        })
+                );
 
                 foreach (var d in NonRemovableDrives)
                 {
@@ -78,16 +101,14 @@ namespace USBAutoRun
 
                         string[] RowData = { d.VolumeLabel, d.DriveType.ToString(), d.DriveFormat, FindINF.ToString() };
 
-                        if (NonRemovableDrivesList.InvokeRequired)
-                        {
-                            NonRemovableDrivesList.Invoke(
-                                new Action(() => { if (NonRemovableDrivesList.FindItemWithText(d.Name) == null) NonRemovableDrivesList.Items.Add(d.Name).SubItems.AddRange(RowData); })
-                            );
-                        };
-                    } catch (Exception err)
+                        NonRemovableDrivesList.Invoke(
+                            new Action(() => { if (NonRemovableDrivesList.FindItemWithText(d.Name) == null) NonRemovableDrivesList.Items.Add(d.Name).SubItems.AddRange(RowData); })
+                        );
+                    }
+                    catch (Exception err)
                     {
                         //MessageBox.Show(err.ToString());
-                        LogBox.Invoke( new Action (() => LogBox.Text += "Drive " + d.Name + err.ToString() + Environment.NewLine));
+                        LogBox.Invoke(new Action(() => LogBox.Text += "Drive " + d.Name + err.ToString() + Environment.NewLine));
                     }
 
                     if (Properties.Settings.Default != null)
@@ -114,6 +135,24 @@ namespace USBAutoRun
                 {
                     LogBox.Invoke(new Action(() => LogBox.Text += "Drive " + d.Name + " is not ready" + Environment.NewLine));
                     NotReadyList.Add(d.Name);
+                    AlreadyReadDrives.Remove(d.Name);
+
+                    RemovableDrivesList.Invoke(
+                            new Action(() =>
+                            {
+                                ListViewItem lvi = RemovableDrivesList.FindItemWithText(d.Name);
+                                if (lvi != null)
+                                    lvi.Remove();
+                            })
+                    );
+                    NonRemovableDrivesList.Invoke(
+                            new Action(() =>
+                            {
+                                ListViewItem lvi = NonRemovableDrivesList.FindItemWithText(d.Name);
+                                if (lvi != null)
+                                    lvi.Remove();
+                            })
+                    );
                 }
                 return false;
             }
