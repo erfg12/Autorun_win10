@@ -37,18 +37,18 @@
             this.Label = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.Type = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.Format = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Inf = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.NonRemovableDrivesList = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.nonremovabletoo = new System.Windows.Forms.CheckBox();
             this.LogBox = new System.Windows.Forms.TextBox();
             this.ReDetectDrives = new System.Windows.Forms.Button();
-            this.Inf = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -62,7 +62,7 @@
             // notifyIcon1
             // 
             this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
-            this.notifyIcon1.Text = "notifyIcon1";
+            this.notifyIcon1.Text = "Autorun_Win10";
             this.notifyIcon1.Visible = true;
             this.notifyIcon1.DoubleClick += new System.EventHandler(this.notifyIcon1_DoubleClick);
             // 
@@ -99,6 +99,10 @@
             // 
             this.Format.Text = "Format";
             // 
+            // Inf
+            // 
+            this.Inf.Text = "Inf";
+            // 
             // NonRemovableDrivesList
             // 
             this.NonRemovableDrivesList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -131,6 +135,10 @@
             // columnHeader5
             // 
             this.columnHeader5.Text = "Format";
+            // 
+            // columnHeader4
+            // 
+            this.columnHeader4.Text = "Inf";
             // 
             // groupBox1
             // 
@@ -182,14 +190,6 @@
             this.ReDetectDrives.Text = "Re-Detect Drives";
             this.ReDetectDrives.UseVisualStyleBackColor = true;
             this.ReDetectDrives.Click += new System.EventHandler(this.ReDetectDrives_Click);
-            // 
-            // Inf
-            // 
-            this.Inf.Text = "Inf";
-            // 
-            // columnHeader4
-            // 
-            this.columnHeader4.Text = "Inf";
             // 
             // MainForm
             // 
